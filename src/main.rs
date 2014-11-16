@@ -14,8 +14,8 @@ use std::time::Duration;
 
 fn main() {
 
-    let w = 120u;
-    let h = 90u;
+    let w = 80u;
+    let h = 60u;
     let state = Vec::from_fn(w * h, |_| {
         if rand::random::<bool>() { Live } else { Dead }
     });
@@ -38,22 +38,37 @@ fn main() {
         //Render world
         render(&world, &mut con);
 
-        //Step the simulation
-        world.step_mut();
-
-        if let Some(keypress) = Console::check_for_keypress(PressedOrReleased) {
-            match keypress.key {
-                Special(key_code::Escape) => {
-                    println!("Exiting");
-                    return;
-                },
-                _ => { }
+        //Handle user input
+        match user_input() {
+            Pass => { },
+            Exit => {
+                println!("User exit");
+                return;
             }
         }
 
+        //Step the simulation
+        world.step_mut();
+
         //Sleep a moment
-        timer::sleep(Duration::milliseconds(50));
+        timer::sleep(Duration::milliseconds(20));
     }
+}
+
+enum UserInput {
+    Pass, Exit
+}
+
+fn user_input() -> UserInput {
+    if let Some(keypress) = Console::check_for_keypress(PressedOrReleased) {
+        if let Special(key_code::Escape) = keypress.key {
+            return Exit;
+        }
+    }
+    else if Console::window_closed() {
+        return Exit;
+    }  
+    Pass
 }
 
 fn render(world: &World, console: &mut Console) {
