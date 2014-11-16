@@ -1,0 +1,18 @@
+[root]
+name = "gol-tcod"
+version = "0.0.1"
+dependencies = [
+ "gol 0.0.1 (git+https://github.com/deadalusai/gol-rs.git)",
+ "tcod 0.1.0 (git+https://github.com/tomassedovic/tcod-rs.git)",
+]
+
+[[package]]
+name = "gol"
+version = "0.0.1"
+source = "git+https://github.com/deadalusai/gol-rs.git#a68cc041a8d78755f7dca0abe97548ecf385645f"
+
+[[package]]
+name = "tcod"
+version = "0.1.0"
+source = "git+https://github.com/tomassedovic/tcod-rs.git#f5e9d8ab9d65159ada8e80b7b703a75801996bc4"
+

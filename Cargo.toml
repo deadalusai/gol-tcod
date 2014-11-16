@@ -1,0 +1,13 @@
+[package]
+
+name = "gol-tcod"
+version = "0.0.1"
+authors = ["Benjamin Fox <deadalus.ai@gmail.com>"]
+
+build = "sh build.sh"
+
+[dependencies.tcod]
+git = "https://github.com/tomassedovic/tcod-rs.git"
+
+[dependencies.gol]
+git = "https://github.com/deadalusai/gol-rs.git"
