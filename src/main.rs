@@ -2,14 +2,15 @@
 
 extern crate tcod;
 extern crate gol;
+extern crate gol_tcod;
 
 use tcod::{ Console, background_flag, key_code, Special, PressedOrReleased };
 use gol::{ World, Dead, Live };
+use gol_tcod::indexed::{ ToIndexed };
 use std::rand;
 use std::os;
 use std::io::timer;
 use std::time::Duration;
-use std::iter::Iterator;
 
 fn main() {
 
@@ -55,8 +56,8 @@ fn main() {
 fn render(world: &World, console: &mut Console) {
     console.clear();
 
-    for (y, row) in indexed(world.iter_rows()) {
-        for (x, cell) in indexed(row.iter()) {
+    for (y, row) in world.iter_rows().indexed() {
+        for (x, cell) in row.iter().indexed() {
             match *cell {
                 Live => { console.put_char(x as int, y as int, '@', background_flag::Set); },
                 _    => { }
@@ -64,28 +65,8 @@ fn render(world: &World, console: &mut Console) {
         }
     }
 
+    let message = format!("Generation: {}", world.generation());
+    console.print_ex(1, 1, background_flag::Set, tcod::Left, message.as_slice()); 
+
     Console::flush();
-}
-
-fn indexed<A, T: Iterator<A>>(iter: T) -> Indexed<A, T> {
-    Indexed { iter: iter, idx: 0 }
-}
-
-struct Indexed<A, T> {
-    iter: T,
-    idx: uint
-}
-
-impl<A, T: Iterator<A>> Iterator<(uint, A)> for Indexed<A, T> {
-    #[inline]
-    fn next(&mut self) -> Option<(uint, A)> {
-        match self.iter.next() {
-            Some(v) => {
-                let result = (self.idx, v);
-                self.idx += 1;
-                Some(result)
-            },
-            None => None
-        }
-    }
 }
