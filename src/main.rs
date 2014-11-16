@@ -14,10 +14,10 @@ use std::time::Duration;
 
 fn main() {
 
-    let w = 80u;
-    let h = 60u;
+    let w = 120u;
+    let h = 90u;
     let state = Vec::from_fn(w * h, |_| {
-        match rand::random::<bool>() { true => Live, false => Dead }
+        if rand::random::<bool>() { Live } else { Dead }
     });
 
     let mut world = match World::try_create(w, h, state) {
@@ -29,7 +29,10 @@ fn main() {
         }
     };
     
-    let mut con = Console::init_root(80, 50, "Game of Life", false);
+    let mut con = Console::init_root(world.width() as int, 
+                                     world.height() as int, 
+                                     "Game of Life", 
+                                     false);
 
     loop {
         //Render world
@@ -49,7 +52,7 @@ fn main() {
         }
 
         //Sleep a moment
-        timer::sleep(Duration::milliseconds(20));
+        timer::sleep(Duration::milliseconds(50));
     }
 }
 
@@ -58,9 +61,8 @@ fn render(world: &World, console: &mut Console) {
 
     for (y, row) in world.iter_rows().indexed() {
         for (x, cell) in row.iter().indexed() {
-            match *cell {
-                Live => { console.put_char(x as int, y as int, '@', background_flag::Set); },
-                _    => { }
+            if cell.is_live() {
+                console.put_char(x as int, y as int, '@', background_flag::Set);
             }
         }
     }
