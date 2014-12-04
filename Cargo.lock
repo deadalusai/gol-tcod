@@ -9,7 +9,7 @@ dependencies = [
 [[package]]
 name = "gol"
 version = "0.0.1"
-source = "git+https://github.com/deadalusai/gol-rs.git#ddec5b132149493dc92e150a88bf4d2d122ad874"
+source = "git+https://github.com/deadalusai/gol-rs.git#7c5fbe8cb34aff481df535c2f0b014b0d83926a1"
 
 [[package]]
 name = "tcod"

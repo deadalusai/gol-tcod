@@ -3,12 +3,16 @@
 extern crate tcod;
 extern crate gol;
 
-use tcod::{ Console, BackgroundFlag, KeyCode, Special, PressedOrReleased };
-use gol::{ World, Dead, Live };
 use std::rand;
 use std::os;
 use std::io::timer;
 use std::time::Duration;
+
+//libtcod
+use tcod::{ Console, BackgroundFlag, KeyCode, Special, Printable, Pressed };
+
+//game of life
+use gol::{ World, Dead, Live };
 
 fn main() {
 
@@ -37,35 +41,53 @@ fn main() {
 
         //Handle user input
         match user_input() {
-            UserInput::Pass => { },
-            UserInput::Exit => {
-                println!("User exit");
+            Some(UserInput::Exit) => {
+                println!("User exit!");
                 return;
-            }
+            },
+            Some(UserInput::SpawnGlider) => {
+                println!("Spawning glider");
+                world.write_cells(
+                    //write co-ords
+                    rows / 2, cells / 2,
+                    //glider
+                    3, 3,
+                    &[ Dead, Dead, Live,
+                       Live, Dead, Live,
+                       Dead, Live, Live, ]
+                );
+            },
+            None => {}
         }
 
         //Step the simulation
         world.step_mut();
 
         //Sleep a moment
-        timer::sleep(Duration::milliseconds(20));
+        timer::sleep(Duration::milliseconds(50));
     }
 }
 
 enum UserInput {
-    Pass, Exit
+    Exit,
+    SpawnGlider
 }
 
-fn user_input() -> UserInput {
-    if let Some(keypress) = Console::check_for_keypress(PressedOrReleased) {
-        if let Special(KeyCode::Escape) = keypress.key {
-            return UserInput::Exit;
+fn user_input() -> Option<UserInput> {
+    use UserInput::{ Exit, SpawnGlider };
+    
+    if Console::window_closed() {
+        return Some(Exit);
+    }
+    else if let Some(keypress) = Console::check_for_keypress(Pressed) {
+        match keypress.key {
+            Special(KeyCode::Escape) => return Some(Exit),
+            Printable('g') => return Some(SpawnGlider),
+            _ => {}
         }
     }
-    else if Console::window_closed() {
-        return UserInput::Exit;
-    }  
-    UserInput::Pass
+
+    None
 }
 
 fn render(world: &World, console: &mut Console) {
