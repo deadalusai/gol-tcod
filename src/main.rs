@@ -4,7 +4,7 @@ extern crate gol;
 
 use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
 use tcod::input::Key::{ Special };
-use tcod::input::KeyCode::{ Escape };
+use tcod::input::KeyCode::{ Escape, Enter };
 use tcod::input::{ KEY_PRESSED, KEY_RELEASED };
 
 use gol::World;
@@ -18,29 +18,29 @@ use std::process::{ exit };
 fn main() {
 
     let (rows, cells) = (60, 80);
-    let state = (0..(rows * cells)).map(|_| if random::<bool>() { Live } else { Dead }).collect();
-
-    let mut world = match World::try_create(rows, cells, state) {
-        Ok(w) => w,
-        Err(err) => {
-            println!("Error creating world: {:?}", err);
-            exit(1);
-        }
-    };
 
     let mut root = Root::initializer()
-                    .size(world.cells() as i32, world.rows() as i32)
+                    .size(cells as i32, rows as i32)
                     .title("Game of Life")
                     .init();
+
+    let mut world = create_random_world(rows, cells);
 
     while !root.window_closed() {
         //Render world
         render(&world, &mut root);
 
         //Handle user input
-        if check_for_exit(&root) {
-            println!("User exit");
-            exit(0);
+        if let Some(input) = user_input(&root) {
+            match input {
+                Input::Exit => {
+                    println!("User exit");
+                    exit(0);
+                },
+                Input::Reroll => {
+                    world = create_random_world(rows, cells);
+                }
+            }
         }
 
         //Step the simulation
@@ -51,13 +51,31 @@ fn main() {
     }
 }
 
-fn check_for_exit(root: &Root) -> bool {
-    if let Some(keypress) = root.check_for_keypress(KEY_PRESSED | KEY_RELEASED) {
-        if let Special(Escape) = keypress.key {
-            return true;
+fn create_random_world(rows: usize, cells: usize) -> World {
+    let state = (0..(rows * cells)).map(|_| if random::<bool>() { Live } else { Dead }).collect();
+
+    let world = match World::try_create(rows, cells, state) {
+        Ok(w) => w,
+        Err(err) => {
+            println!("Error creating world: {:?}", err);
+            exit(1);
         }
+    };
+
+    world
+}
+
+enum Input { Exit, Reroll }
+
+fn user_input(root: &Root) -> Option<Input> {
+    if let Some(keypress) = root.check_for_keypress(KEY_PRESSED | KEY_RELEASED) {
+        return match keypress.key {
+            Special(Escape) => Some(Input::Exit),
+            Special(Enter)  => Some(Input::Reroll),
+            _______________ => None
+        };
     }
-    false
+    None
 }
 
 fn render(world: &World, root: &mut Root) {
