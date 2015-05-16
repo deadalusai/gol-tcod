@@ -4,7 +4,8 @@ name = "gol_tcod"
 version = "0.0.1"
 authors = ["Benjamin Fox <deadalus.ai@gmail.com>"]
 
-build = "build.rs"
+[dependencies]
+rand = "*"
 
 [dependencies.tcod]
 git = "https://github.com/tomassedovic/tcod-rs.git"

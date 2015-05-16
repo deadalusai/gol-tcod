@@ -1,86 +1,78 @@
-#![feature(if_let)]
-
 extern crate tcod;
+extern crate rand;
 extern crate gol;
 
-use tcod::{ Console, BackgroundFlag, KeyCode, Special, PressedOrReleased };
-use gol::{ World, Dead, Live };
-use std::rand;
-use std::os;
-use std::io::timer;
-use std::time::Duration;
+use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
+use tcod::input::Key::{ Special };
+use tcod::input::KeyCode::{ Escape };
+use tcod::input::{ KEY_PRESSED, KEY_RELEASED };
+
+use gol::World;
+use gol::Cell::{ Dead, Live };
+
+use rand::{ random };
+
+use std::thread;
+use std::process::{ exit };
 
 fn main() {
 
     let (rows, cells) = (60, 80);
-    let state = Vec::from_fn(rows * cells, |_| {
-        if rand::random::<bool>() { Live } else { Dead }
-    });
+    let state = (0..(rows * cells)).map(|_| if random::<bool>() { Live } else { Dead }).collect();
 
     let mut world = match World::try_create(rows, cells, state) {
         Ok(w) => w,
         Err(err) => {
-            println!("Error creating world: {}", err);
-            os::set_exit_status(1);
-            return;
+            println!("Error creating world: {:?}", err);
+            exit(1);
         }
     };
-    
-    let mut con = Console::init_root(world.cells() as int, 
-                                     world.rows() as int, 
-                                     "Game of Life", 
-                                     false);
 
-    loop {
+    let mut root = Root::initializer()
+                    .size(world.cells() as i32, world.rows() as i32)
+                    .title("Game of Life")
+                    .init();
+
+    while !root.window_closed() {
         //Render world
-        render(&world, &mut con);
+        render(&world, &mut root);
 
         //Handle user input
-        match user_input() {
-            UserInput::Pass => { },
-            UserInput::Exit => {
-                println!("User exit");
-                return;
-            }
+        if check_for_exit(&root) {
+            println!("User exit");
+            exit(0);
         }
 
         //Step the simulation
         world.step_mut();
 
         //Sleep a moment
-        timer::sleep(Duration::milliseconds(20));
+        thread::sleep_ms(20);
     }
 }
 
-enum UserInput {
-    Pass, Exit
-}
-
-fn user_input() -> UserInput {
-    if let Some(keypress) = Console::check_for_keypress(PressedOrReleased) {
-        if let Special(KeyCode::Escape) = keypress.key {
-            return UserInput::Exit;
+fn check_for_exit(root: &Root) -> bool {
+    if let Some(keypress) = root.check_for_keypress(KEY_PRESSED | KEY_RELEASED) {
+        if let Special(Escape) = keypress.key {
+            return true;
         }
     }
-    else if Console::window_closed() {
-        return UserInput::Exit;
-    }  
-    UserInput::Pass
+    false
 }
 
-fn render(world: &World, console: &mut Console) {
-    console.clear();
+fn render(world: &World, root: &mut Root) {
+    root.clear();
 
     for (y, row) in world.iter_rows().enumerate() {
         for (x, cell) in row.iter().enumerate() {
             if cell.is_live() {
-                console.put_char(x as int, y as int, '@', BackgroundFlag::Set);
+                root.put_char(x as i32, y as i32, '@', BackgroundFlag::Set);
             }
         }
     }
 
     let message = format!("Generation: {}", world.generation());
-    console.print_ex(1, 1, BackgroundFlag::Set, tcod::Left, message.as_slice()); 
+    root.print_ex(1, 1, BackgroundFlag::Set, TextAlignment::Left, &message); 
 
-    Console::flush();
+    root.flush();
 }
