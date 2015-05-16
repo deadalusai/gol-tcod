@@ -4,7 +4,7 @@ version = "0.0.1"
 dependencies = [
  "gol 0.0.1 (git+https://github.com/deadalusai/gol-rs.git)",
  "rand 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "tcod 0.6.0 (git+https://github.com/tomassedovic/tcod-rs.git)",
+ "tcod 0.6.0 (git+https://github.com/tomassedovic/tcod-rs.git?rev=64510dbd86388cd5667b8b92d097e722e6c28aa4)",
 ]
 
 [[package]]
@@ -41,18 +41,18 @@ dependencies = [
 [[package]]
 name = "tcod"
 version = "0.6.0"
-source = "git+https://github.com/tomassedovic/tcod-rs.git#64510dbd86388cd5667b8b92d097e722e6c28aa4"
+source = "git+https://github.com/tomassedovic/tcod-rs.git?rev=64510dbd86388cd5667b8b92d097e722e6c28aa4#64510dbd86388cd5667b8b92d097e722e6c28aa4"
 dependencies = [
  "bitflags 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "tcod-sys 2.0.11 (git+https://github.com/tomassedovic/tcod-rs.git)",
+ "tcod-sys 2.0.11 (git+https://github.com/tomassedovic/tcod-rs.git?rev=64510dbd86388cd5667b8b92d097e722e6c28aa4)",
  "time 0.1.25 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "tcod-sys"
 version = "2.0.11"
-source = "git+https://github.com/tomassedovic/tcod-rs.git#64510dbd86388cd5667b8b92d097e722e6c28aa4"
+source = "git+https://github.com/tomassedovic/tcod-rs.git?rev=64510dbd86388cd5667b8b92d097e722e6c28aa4#64510dbd86388cd5667b8b92d097e722e6c28aa4"
 dependencies = [
  "libc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

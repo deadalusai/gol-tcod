@@ -9,6 +9,7 @@ rand = "*"
 
 [dependencies.tcod]
 git = "https://github.com/tomassedovic/tcod-rs.git"
+rev = "64510dbd86388cd5667b8b92d097e722e6c28aa4"
 
 [dependencies.gol]
 git = "https://github.com/deadalusai/gol-rs.git"
