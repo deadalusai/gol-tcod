@@ -5,7 +5,8 @@ extern crate gol;
 use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
 use tcod::input::Key::{ Special };
 use tcod::input::KeyCode::{ Escape, Enter };
-use tcod::input::{ KEY_PRESSED, KEY_RELEASED };
+use tcod::input::{ KEY_PRESSED };
+use tcod::input::{ Event, EventIterator, MouseState };
 
 use gol::{ World, Grid };
 
@@ -37,7 +38,10 @@ fn main() {
                     exit(0);
                 },
                 Input::Reroll => {
-                    world = create_random_world(width, height);
+                    world = create_random_world(rows, cells);
+                },
+                Input::Draw(x, y) => {
+                    world.write_cells(y, x, 1, 1, &[ Live ]);
                 }
             }
         }
@@ -55,16 +59,33 @@ fn create_random_world(width: usize, height: usize) -> World {
     World::new(Grid::create_random(&mut rng, width, height))
 }
 
-enum Input { Exit, Reroll }
+enum Input { Exit, Reroll, Draw(usize, usize) }
 
 fn user_input(root: &Root) -> Option<Input> {
-    if let Some(keypress) = root.check_for_keypress(KEY_PRESSED | KEY_RELEASED) {
-        return match keypress.key {
-            Special(Escape) => Some(Input::Exit),
-            Special(Enter)  => Some(Input::Reroll),
-            _______________ => None
+    for (flags, event) in EventIterator::new() {
+        let input = match event {
+            Event::Key(s) => {
+                match s.key {
+                    Special(Escape) => Some(Input::Exit),
+                    Special(Enter)  => Some(Input::Reroll),
+                    _______________ => None
+                }
+            },
+            Event::Mouse(s) => {
+                if s.lbutton_pressed {
+                    Some(Input::Draw(s.cx as usize, s.cy as usize))
+                }
+                else {
+                    None
+                }
+            }
         };
+
+        if input.is_some() {
+            return input;
+        }
     }
+
     None
 }
 
