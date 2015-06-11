@@ -5,10 +5,11 @@ extern crate gol;
 use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
 use tcod::input::Key::{ Special };
 use tcod::input::KeyCode::{ Escape, Enter };
-use tcod::input::{ KEY_PRESSED };
-use tcod::input::{ Event, EventIterator, MouseState };
+use tcod::input::{ Event, EventIterator };
 
 use gol::{ World, Grid };
+use gol::Cell::Dead as X;
+use gol::Cell::Live as O;
 
 use rand::{ thread_rng };
 
@@ -24,24 +25,31 @@ fn main() {
                     .title("Game of Life")
                     .init();
 
-    let mut world = create_random_world(width, height);
+    //glider to be written in when the user clicks
+    let glider = Grid::from_raw(3, 3, vec![ 
+        X, X, O, 
+        O, X, O,
+        X, O, O 
+    ]);
+
+    let mut world = World::new(Grid::create_dead(width, height));
 
     while !root.window_closed() {
         //Render world
         render(&world, &mut root);
 
         //Handle user input
-        if let Some(input) = user_input(&root) {
+        if let Some(input) = user_input() {
             match input {
                 Input::Exit => {
                     println!("User exit");
                     exit(0);
                 },
                 Input::Reroll => {
-                    world = create_random_world(rows, cells);
+                    world = create_random_world(width, height);
                 },
                 Input::Draw(x, y) => {
-                    world.write_cells(y, x, 1, 1, &[ Live ]);
+                    world.write_cells(x, y, &glider);
                 }
             }
         }
@@ -61,8 +69,8 @@ fn create_random_world(width: usize, height: usize) -> World {
 
 enum Input { Exit, Reroll, Draw(usize, usize) }
 
-fn user_input(root: &Root) -> Option<Input> {
-    for (flags, event) in EventIterator::new() {
+fn user_input() -> Option<Input> {
+    for (_, event) in EventIterator::new() {
         let input = match event {
             Event::Key(s) => {
                 match s.key {
