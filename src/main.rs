@@ -7,24 +7,23 @@ use tcod::input::Key::{ Special };
 use tcod::input::KeyCode::{ Escape, Enter };
 use tcod::input::{ KEY_PRESSED, KEY_RELEASED };
 
-use gol::World;
-use gol::Cell::{ Dead, Live };
+use gol::{ World, Grid };
 
-use rand::{ random };
+use rand::{ thread_rng };
 
 use std::thread;
 use std::process::{ exit };
 
 fn main() {
 
-    let (rows, cells) = (60, 80);
+    let (width, height) = (80, 60);
 
     let mut root = Root::initializer()
-                    .size(cells as i32, rows as i32)
+                    .size(width as i32, height as i32)
                     .title("Game of Life")
                     .init();
 
-    let mut world = create_random_world(rows, cells);
+    let mut world = create_random_world(width, height);
 
     while !root.window_closed() {
         //Render world
@@ -38,7 +37,7 @@ fn main() {
                     exit(0);
                 },
                 Input::Reroll => {
-                    world = create_random_world(rows, cells);
+                    world = create_random_world(width, height);
                 }
             }
         }
@@ -51,18 +50,9 @@ fn main() {
     }
 }
 
-fn create_random_world(rows: usize, cells: usize) -> World {
-    let state = (0..(rows * cells)).map(|_| if random::<bool>() { Live } else { Dead }).collect();
-
-    let world = match World::try_create(rows, cells, state) {
-        Ok(w) => w,
-        Err(err) => {
-            println!("Error creating world: {:?}", err);
-            exit(1);
-        }
-    };
-
-    world
+fn create_random_world(width: usize, height: usize) -> World {
+    let mut rng = thread_rng();
+    World::new(Grid::create_random(&mut rng, width, height))
 }
 
 enum Input { Exit, Reroll }
@@ -84,7 +74,7 @@ fn render(world: &World, root: &mut Root) {
     for (y, row) in world.iter_rows().enumerate() {
         for (x, cell) in row.iter().enumerate() {
             if cell.is_live() {
-                root.put_char(x as i32, y as i32, '@', BackgroundFlag::Set);
+                root.put_char(x as i32, y as i32, 'O', BackgroundFlag::Set);
             }
         }
     }
