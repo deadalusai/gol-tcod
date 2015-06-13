@@ -8,7 +8,7 @@ use std::io;
 use std::fmt;
 use std::convert;
 use std::str::FromStr;
-use std::cmp;
+use std::iter;
 
 pub struct PlainText {
     pub name: String,
@@ -17,22 +17,37 @@ pub struct PlainText {
 }
 
 #[derive(Debug)]
-struct FillTo(usize, usize);
+struct Padding(usize, usize, usize, usize);
 
-impl FromStr for FillTo {
+impl FromStr for Padding {
     type Err = ();
-    fn from_str(s: &str) -> Result<FillTo, ()> {
-        let mut parts = s.split('x').map(|p| FromStr::from_str(p));
+    
+    /// Parses a css-style `top[,right][,bottom][,left]` expression.
+    fn from_str(s: &str) -> Result<Padding, ()> {
+        let mut parts = s.split(',').map(|p| FromStr::from_str(p.trim()));
         let p1 = match parts.next() {
             None | Some(Err(..)) => return Err(()), Some(Ok(v)) => v,
         };
         let p2 = match parts.next() {
-            None | Some(Err(..)) => return Err(()), Some(Ok(v)) => v,
+            Some(Err(..)) => return Err(()),
+            Some(Ok(v)) => v,
+            None => p1,
         };
-        if !parts.next().is_none() {
-            return Err(())
+        let p3 = match parts.next() {
+            Some(Err(..)) => return Err(()),
+            Some(Ok(v)) => v,
+            None => p1
+        };
+        let p4 = match parts.next() {
+            Some(Err(..)) => return Err(()),
+            Some(Ok(v)) => v,
+            None => p2
+        };
+        //Assert no more parts
+        if parts.next().is_some() {
+            return Err(());
         }
-        Ok(FillTo(p1, p2))
+        Ok(Padding(p1, p2, p3, p4))
     }
 }
 
@@ -79,7 +94,7 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
     let mut comment = String::new();
     let mut rows = Vec::new();
     let mut width = 0;
-    let mut fill_to = FillTo (0, 0);
+    let mut padding = Padding(0, 0, 0, 0);
 
     for line in reader.lines() {
         let line = try!(line);
@@ -96,11 +111,11 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
             if !line.starts_with("!") {
                 state = S::Body;
             }
-            else if line.starts_with("!Fill to:") {
-                //special fill support
+            else if line.starts_with("!Padding:") {
+                //special padding extension
                 let line = sub_string_from(&line, 9).unwrap_or("").trim();
-                if let Ok(fill) = FillTo::from_str(line) {
-                    fill_to = fill;
+                if let Ok(p) = Padding::from_str(line) {
+                    padding = p;
                 }
             }
             else {
@@ -130,40 +145,31 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
         }
     }
 
-    let FillTo(fill_width, fill_height) = fill_to;
-
-    let width = cmp::max(fill_width, width);
-    let height = cmp::max(fill_height, rows.len());
-
-    let cells = fill_and_flatten(rows, fill_to);
+    let grid = pad_and_create_grid(rows, width, padding);
 
     Ok(PlainText {
         name: name,
         comment: comment,
-        data: Grid::from_raw(width, height, cells)
+        data: grid
     })
 }
  
-fn fill_and_flatten(rows: Vec<Vec<Cell>>, fill_to: FillTo) -> Vec<Cell> {
-    
-    let FillTo(width, height) = fill_to;
+fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, padding: Padding) -> Grid {
+
+    let Padding(t, r, b, l) = padding;
+
+    let width = width + l + r;
+    let height = rows.len() + t + b;
 
     let mut cells = Vec::with_capacity(width * height);
     
+    cells.extend(iter::repeat(Dead).take(t * width));
     for row in &rows {
-        for cell in row {
-            cells.push(cell.clone());
-        }
-        //Apply width padding if necessary
-        if row.len() < width {
-            cells.extend((0..width - row.len()).map(|_| Dead));
-        }
+        cells.extend(iter::repeat(Dead).take(l));
+        cells.extend(row.iter().map(|c| c.clone()));
+        cells.extend(iter::repeat(Dead).take(r));
     }
-    //Apply height padding if necessary
-    if rows.len() < height {
-        cells.extend((0..(height - rows.len()) * width).map(|_| Dead));
-    }
+    cells.extend(iter::repeat(Dead).take(b * width));
     
-
-    cells
+    Grid::from_raw(width, height, cells)
 }

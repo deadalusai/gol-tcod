@@ -1,0 +1,5 @@
+!Name: Glider
+!Padding: 10,50,50,10
+.O.
+..O
+OOO

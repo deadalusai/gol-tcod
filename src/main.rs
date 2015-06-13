@@ -29,7 +29,7 @@ fn main() {
             let r = read_world_from_file(&Path::new(&s));
             match r {
                 Err(e) => {
-                    println!("Unexpected {}", e);
+                    println!("Error parsing file: {}", e);
                     exit(1);
                 },
                 Ok(p) => {
