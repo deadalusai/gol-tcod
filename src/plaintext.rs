@@ -16,7 +16,7 @@ pub struct PlainText {
     pub data: Grid
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 struct Padding(usize, usize, usize, usize);
 
 impl FromStr for Padding {
@@ -49,6 +49,69 @@ impl FromStr for Padding {
         }
         Ok(Padding(p1, p2, p3, p4))
     }
+}
+
+#[cfg(test)]
+mod padding_tests {
+    use super::Padding;
+    use std::str::FromStr;
+
+    #[test]
+    fn can_parse_single_value() {
+        let expected = Ok(Padding(10, 10, 10, 10));
+        let actual = FromStr::from_str("10");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn can_parse_two_values() {
+        let expected = Ok(Padding(10, 20, 10, 20));
+        let actual = FromStr::from_str("10,20");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn can_parse_three_values() {
+        let expected = Ok(Padding(10, 20, 30, 20));
+        let actual = FromStr::from_str("10,20,30,20");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn can_parse_four_value() {
+        let expected = Ok(Padding(10, 20, 30, 40));
+        let actual = FromStr::from_str("10,20,30,40");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn can_ignore_whitespace() {
+        let expected = Ok(Padding(10, 20, 30, 40));
+        let actual = FromStr::from_str(" 10 , 20 , 30 , 40 ");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn fails_with_more_than_five_values() {
+        let expected: Result<Padding, _> = Err(());
+        let actual = FromStr::from_str("10,20,30,40,60");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn fails_with_no_values() {
+        let expected: Result<Padding, _> = Err(());
+        let actual = FromStr::from_str("");
+        assert_eq!(expected, actual)
+    }
+
+    #[test]
+    fn fails_with_invalid_value() {
+        let expected: Result<Padding, _> = Err(());
+        let actual = FromStr::from_str("1,this isn't an int");
+        assert_eq!(expected, actual)
+    }
+
 }
 
 #[derive(Debug)]
@@ -145,7 +208,7 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
         }
     }
 
-    let grid = pad_and_create_grid(rows, width, padding);
+    let grid = pad_and_create_grid(rows, width, &padding);
 
     Ok(PlainText {
         name: name,
@@ -154,9 +217,9 @@ pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
     })
 }
  
-fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, padding: Padding) -> Grid {
+fn pad_and_create_grid(rows: Vec<Vec<Cell>>, width: usize, padding: &Padding) -> Grid {
 
-    let Padding(t, r, b, l) = padding;
+    let Padding(t, r, b, l) = *padding;
 
     let width = width + l + r;
     let height = rows.len() + t + b;
