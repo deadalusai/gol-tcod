@@ -35,7 +35,7 @@ fn main() {
                     exit(1);
                 },
                 Ok(p) => {
-                    (World::new(p.data) , p.name.unwrap_or_else(|| "unknown".to_string()))
+                    (World::new(p.data) , format!("{}\n{}", p.name, p.comment))
                 }
             }
         }
@@ -120,10 +120,10 @@ fn user_input() -> Option<Input> {
     None
 }
 
-fn render(world: &World, label: &str, root: &mut Root) {
+fn render(w: &World, label: &str, root: &mut Root) {
     root.clear();
 
-    for (y, row) in world.iter_rows().enumerate() {
+    for (y, row) in w.iter_rows().enumerate() {
         for (x, cell) in row.iter().enumerate() {
             if cell.is_live() {
                 root.put_char(x as i32, y as i32, 'O', BackgroundFlag::Set);
@@ -131,9 +131,13 @@ fn render(world: &World, label: &str, root: &mut Root) {
         }
     }
 
-    let message = format!("{} (Generation: {})", label, world.generation());
-    root.print_ex(1, 1, BackgroundFlag::Set, TextAlignment::Left, &message); 
-
+    //Print label
+    root.print_ex(0, 0, BackgroundFlag::Set, TextAlignment::Left, &label);
+    
+    //Print generation
+    root.print_ex(w.width() as i32 - 1, w.height() as i32 - 1, 
+                  BackgroundFlag::Set, TextAlignment::Right, &format!("Gen: {}", w.generation()));
+    
     root.flush();
 }
 

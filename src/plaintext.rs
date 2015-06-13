@@ -9,8 +9,8 @@ use std::fmt;
 use std::convert;
 
 pub struct PlainText {
-    pub name: Option<String>,
-    pub comment: Option<String>,
+    pub name: String,
+    pub comment: String,
     pub data: Grid
 }
 
@@ -44,48 +44,53 @@ impl fmt::Display for Error {
 pub fn parse_plaintext<R>(reader: R) -> Result<PlainText, Error>
     where R: io::BufRead
 {
+    #[derive(PartialEq)]
     enum S { Name, Comment, Body }
 
     let mut state = S::Name;
 
-    let mut name = None;
-    let mut comment = None;
+    let mut name = String::new();
+    let mut comment = String::new();
     let mut width: usize = 0;
     let mut rows = Vec::new();
 
     for line in reader.lines() {
         let line = try!(line);
-        match state {
-            S::Name => {
-                if !line.starts_with("!Name: ") {
-                    return Err(Error::NameLineMissing);
-                }
-                name = sub_string_from(&line, 6).map(|s| s.trim().to_string());
-                state = S::Comment;
-            },
-            S::Comment => {
-                if !line.starts_with("!") {
-                    state = S::Body;
-                }
-                comment = sub_string_from(&line, 1).map(|s| s.trim().to_string());
-            },
-            S::Body => {
-                let mut row = Vec::new();
-                for c in line.trim().chars() {
-                    match c {
-                        'O' => row.push(Live),
-                        '.' => row.push(Dead),
-                        ___ => { },
-                    }
-                }
-                if rows.len() == 0 {
-                    width = row.len();
-                }
-                else if width != row.len() {
-                    return Err(Error::Invalid);
-                }
-                rows.push(row);
+        if state == S::Name {
+            if !line.starts_with("!Name: ") {
+                return Err(Error::NameLineMissing);
             }
+            name.push_str(sub_string_from(&line, 6).unwrap_or("").trim());
+            state = S::Comment;
+            continue;
+        }
+        if state == S::Comment {
+            if !line.starts_with("!") {
+                state = S::Body;
+            }
+            else {
+                if comment.len() != 0 {
+                    comment.push_str("\n");
+                }
+                comment.push_str(sub_string_from(&line, 1).unwrap_or("").trim());
+            }
+        }
+        if state == S::Body {
+            let mut row = Vec::new();
+            for c in line.trim().chars() {
+                match c {
+                    'O' => row.push(Live),
+                    '.' => row.push(Dead),
+                    ___ => { },
+                }
+            }
+            if rows.len() == 0 {
+                width = row.len();
+            }
+            else if width != row.len() {
+                return Err(Error::Invalid);
+            }
+            rows.push(row);
         }
     }
 
