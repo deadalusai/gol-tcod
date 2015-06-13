@@ -1,8 +1,12 @@
 [package]
-
 name = "gol_tcod"
 version = "0.0.1"
 authors = ["Benjamin Fox <deadalus.ai@gmail.com>"]
+
+[[bin]]
+name = "gol-tcod"
+test = false
+doc = false
 
 [dependencies]
 rand = "*"

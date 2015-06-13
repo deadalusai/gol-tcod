@@ -2,16 +2,13 @@ extern crate tcod;
 extern crate rand;
 extern crate gol;
 
-mod plaintext;
-
 use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
 use tcod::input::Key::{ Special };
 use tcod::input::KeyCode::{ Escape, Enter };
 use tcod::input::{ Event, EventIterator };
 
 use gol::{ World, Grid };
-
-use plaintext as pt;
+use gol::plaintext as pt;
 
 use rand::{ thread_rng };
 
