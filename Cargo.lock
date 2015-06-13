@@ -20,7 +20,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "gol"
 version = "0.0.2"
-source = "git+https://github.com/deadalusai/gol-rs.git#668fb37e2ffea537f5b588a84e87b0638a0702e0"
+source = "git+https://github.com/deadalusai/gol-rs.git#8945b4d9a40dbf9c86249accefbe8bbd935b2551"
 dependencies = [
  "rand 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
