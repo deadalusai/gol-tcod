@@ -10,8 +10,6 @@ use tcod::input::KeyCode::{ Escape, Enter };
 use tcod::input::{ Event, EventIterator };
 
 use gol::{ World, Grid };
-use gol::Cell::Dead as X;
-use gol::Cell::Live as O;
 
 use plaintext as pt;
 
@@ -46,11 +44,7 @@ fn main() {
     let (width, height) = (world.width(), world.height());
 
     //glider to be written in when the user clicks
-    let glider = Grid::from_raw(3, 3, vec![ 
-        X, X, O, 
-        O, X, O,
-        X, O, O 
-    ]);
+    let glider = create_glider();
 
     let mut root = Root::initializer()
                     .size(width as i32, height as i32)
@@ -88,6 +82,16 @@ fn main() {
 fn create_random_world(width: usize, height: usize) -> World {
     let mut rng = thread_rng();
     World::new(Grid::create_random(&mut rng, width, height))
+}
+
+fn create_glider() -> Grid {
+    use gol::Cell::Dead as X;
+    use gol::Cell::Live as O;
+    Grid::from_raw(3, 3, vec![ 
+        X, X, O, 
+        O, X, O,
+        X, O, O 
+    ])
 }
 
 enum Input { Exit, Reroll, Draw(usize, usize) }
