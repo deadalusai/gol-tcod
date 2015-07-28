@@ -3,10 +3,9 @@ extern crate rand;
 extern crate gol;
 
 use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
-use tcod::input::Key::{ Special };
-use tcod::input::KeyCode::{ Escape, Enter };
-use tcod::input::{ Event, EventIterator };
 use tcod::system;
+use tcod::input::{ Event, Key, KeyCode };
+use tcod::input;
 
 use gol::{ World, Grid };
 use gol::plaintext as pt;
@@ -17,25 +16,18 @@ use std::process::{ exit };
 use std::io;
 use std::fs;
 use std::path::{ Path };
+use std::env;
 
 fn main() {
 
     let (mut world, label) = 
-        if let Some(s) = std::env::args().skip(1).next() {
-            println!("Reading from file: {}", s);
-            let r = read_world_from_file(&Path::new(&s));
-            match r {
-                Err(e) => {
-                    println!("Error parsing file: {}", e);
-                    exit(1);
-                },
-                Ok(p) => {
-                    (World::new(p.data) , format!("{}\n{}", p.name, p.comment))
-                }
-            }
+        if let Some(ptext) = maybe_load_plaintext_from_file() {
+            let world = World::new(ptext.data);
+            (world, format!("{}\n{}", ptext.name, ptext.comment))
         }
         else {
-            (create_random_world(80, 60), "Random".to_string())
+            let world = create_random_world(80, 60); 
+            (world, "Random".into())
         };
 
     let (width, height) = (world.width(), world.height());
@@ -77,6 +69,32 @@ fn main() {
     }
 }
 
+fn maybe_load_plaintext_from_file() -> Option<pt::PlainText> {
+    
+    //try and grab a filename from the first argument...
+    if let Some(filename) = env::args().skip(1).next() {
+    
+        let path = Path::new(&filename);
+        println!("Reading world from file: {}", path.display());
+        
+        match read_world_from_file(&path) {
+            Err(e) => {
+                //couldn't parse the file - bail out
+                println!("Error parsing file: {}", &e);
+                exit(1);
+            },
+            Ok(p) => Some(p)
+        }
+    }
+    else { None }
+}
+
+fn read_world_from_file(path: &Path) -> pt::ParseResult {
+    let file = try!(fs::File::open(path));
+    let file = io::BufReader::new(file);
+    pt::parse_plaintext(file)
+}
+
 fn create_random_world(width: usize, height: usize) -> World {
     let mut rng = thread_rng();
     World::new(Grid::create_random(&mut rng, width, height))
@@ -95,31 +113,21 @@ fn create_glider() -> Grid {
 enum Input { Exit, Reroll, Draw(usize, usize) }
 
 fn user_input() -> Option<Input> {
-    for (_, event) in EventIterator::new() {
-        let input = match event {
-            Event::Key(s) => {
-                match s.key {
-                    Special(Escape) => Some(Input::Exit),
-                    Special(Enter)  => Some(Input::Reroll),
-                    _______________ => None
-                }
-            },
-            Event::Mouse(s) => {
-                if s.lbutton_pressed {
-                    Some(Input::Draw(s.cx as usize, s.cy as usize))
-                }
-                else {
-                    None
-                }
+    
+    let flags = input::MOUSE | input::KEY;
+    match input::check_for_event(flags).map(|(_, e)| e) {
+        Some(Event::Key(s)) => {
+            match s.key {
+                Key::Special(KeyCode::Escape) => Some(Input::Exit),
+                Key::Special(KeyCode::Enter) => Some(Input::Reroll),
+                _ => None
             }
-        };
-
-        if input.is_some() {
-            return input;
-        }
+        },
+        Some(Event::Mouse(s)) if s.lbutton_pressed => {
+            Some(Input::Draw(s.cx as usize, s.cy as usize))
+        },
+        _ => None
     }
-
-    None
 }
 
 fn render(w: &World, label: &str, root: &mut Root) {
@@ -141,11 +149,5 @@ fn render(w: &World, label: &str, root: &mut Root) {
                   BackgroundFlag::Set, TextAlignment::Right, &format!("Gen: {}", w.generation()));
     
     root.flush();
-}
-
-fn read_world_from_file(path: &Path) -> pt::ParseResult {
-    let file = try!(fs::File::open(path));
-    let file = io::BufReader::new(file);
-    pt::parse_plaintext(file)
 }
 
