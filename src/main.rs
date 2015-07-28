@@ -6,13 +6,13 @@ use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
 use tcod::input::Key::{ Special };
 use tcod::input::KeyCode::{ Escape, Enter };
 use tcod::input::{ Event, EventIterator };
+use tcod::system;
 
 use gol::{ World, Grid };
 use gol::plaintext as pt;
 
 use rand::{ thread_rng };
 
-use std::thread;
 use std::process::{ exit };
 use std::io;
 use std::fs;
@@ -43,12 +43,16 @@ fn main() {
     //glider to be written in when the user clicks
     let glider = create_glider();
 
-    let mut root = Root::initializer()
-                    .size(width as i32, height as i32)
-                    .title("Game of Life")
-                    .init();
+    let mut root =
+        Root::initializer()
+            .size(width as i32, height as i32)
+            .title("Game of Life")
+            .init();
+                    
+    system::set_fps(30);
 
     while !root.window_closed() {
+    
         //Render world
         render(&world, &label, &mut root);
 
@@ -70,9 +74,6 @@ fn main() {
 
         //Step the simulation
         world.step_mut();
-
-        //Sleep a moment
-        thread::sleep_ms(20);
     }
 }
 
