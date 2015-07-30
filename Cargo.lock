@@ -2,7 +2,7 @@
 name = "gol_tcod"
 version = "0.0.1"
 dependencies = [
- "gol 0.0.2 (git+https://github.com/deadalusai/gol-rs.git)",
+ "gol 0.0.3 (git+https://github.com/deadalusai/gol-rs.git)",
  "rand 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "tcod 0.6.0 (git+https://github.com/tomassedovic/tcod-rs.git?rev=64510dbd86388cd5667b8b92d097e722e6c28aa4)",
 ]
@@ -19,11 +19,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "gol"
-version = "0.0.2"
-source = "git+https://github.com/deadalusai/gol-rs.git#ac3cd24b8a686d3b86759dd8e26863aed2a3a403"
-dependencies = [
- "rand 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
-]
+version = "0.0.3"
+source = "git+https://github.com/deadalusai/gol-rs.git#df2704fac5221ae47037916dbd73e626c3510a9a"
 
 [[package]]
 name = "libc"

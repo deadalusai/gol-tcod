@@ -17,4 +17,4 @@ rev = "64510dbd86388cd5667b8b92d097e722e6c28aa4"
 
 [dependencies.gol]
 git = "https://github.com/deadalusai/gol-rs.git"
-version = "0.0.2"
+version = "0.0.3"

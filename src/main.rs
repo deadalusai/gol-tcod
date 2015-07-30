@@ -7,10 +7,11 @@ use tcod::system;
 use tcod::input::{ Event, Key, KeyCode };
 use tcod::input;
 
-use gol::{ World, Grid };
+use gol::world::World;
+use gol::grid::{ Grid, Cell };
 use gol::plaintext as pt;
 
-use rand::{ thread_rng };
+use rand::{ thread_rng, Rng };
 
 use std::process::{ exit };
 use std::io;
@@ -97,12 +98,14 @@ fn read_world_from_file(path: &Path) -> pt::ParseResult {
 
 fn create_random_world(width: usize, height: usize) -> World {
     let mut rng = thread_rng();
-    World::new(Grid::create_random(&mut rng, width, height))
+    let choices = [ Cell::Dead, Cell::Live ];
+    let grid = Grid::from_fn(width, height, |_, _| rng.choose(&choices).unwrap().clone());
+    World::new(grid)
 }
 
 fn create_glider() -> Grid {
-    use gol::Cell::Dead as X;
-    use gol::Cell::Live as O;
+    use gol::grid::Cell::Dead as X;
+    use gol::grid::Cell::Live as O;
     Grid::from_raw(3, 3, vec![ 
         X, X, O, 
         O, X, O,
