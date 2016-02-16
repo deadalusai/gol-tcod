@@ -19,7 +19,7 @@ around issues encountered.
 ## Notes
 
 1.  I've had difficulty getting a 64-bit MinGW build chain working. So far it has been simplest
-    to use [32-bit Rust][rust-32bit] and the [32-bit MinGW tools][mingw-get-installer]
+    to use [32-bit Rust][rust-32bit] and the 32-bit MinGW tools via [mingw-get-setup.exe][mingw-get-installer]
 
 2.  You will need the following MinGW packages (also listed on the tcod-rs instructions):
 
@@ -52,7 +52,6 @@ around issues encountered.
     do this without modifying the tcod-rs source.
 
 
-
-[rust-32bit]: https://static.rust-lang.org/dist/rust-1.0.0-i686-pc-windows-gnu.msi
-[mingw-get-installer]: http://sourceforge.net/projects/mingw/files/
+[rust-32bit]: https://static.rust-lang.org/dist/rust-nightly-i686-unknown-linux-gnu.tar.gz
+[mingw-get-installer]: https://sourceforge.net/projects/mingw/files/Installer/
 [mingw-bug]: https://github.com/g-truc/glm/issues/300

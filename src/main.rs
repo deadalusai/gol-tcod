@@ -4,7 +4,7 @@ extern crate gol;
 
 use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
 use tcod::system;
-use tcod::input::{ Event, Key, KeyCode };
+use tcod::input::{ Event, KeyCode };
 use tcod::input;
 
 use gol::world::World;
@@ -60,7 +60,7 @@ fn main() {
                     world = create_random_world(width, height);
                 },
                 Input::Draw(x, y) => {
-                    world.write_cells(x, y, &glider);
+                    world.grid_mut().write_cells(x, y, &glider);
                 }
             }
         }
@@ -120,9 +120,9 @@ fn user_input() -> Option<Input> {
     let flags = input::MOUSE | input::KEY;
     match input::check_for_event(flags).map(|(_, e)| e) {
         Some(Event::Key(s)) => {
-            match s.key {
-                Key::Special(KeyCode::Escape) => Some(Input::Exit),
-                Key::Special(KeyCode::Enter) => Some(Input::Reroll),
+            match s.code {
+                KeyCode::Escape => Some(Input::Exit),
+                KeyCode::Enter => Some(Input::Reroll),
                 _ => None
             }
         },
@@ -136,16 +136,14 @@ fn user_input() -> Option<Input> {
 fn render(w: &World, label: &str, root: &mut Root) {
     root.clear();
 
-    for (y, row) in w.iter_rows().enumerate() {
-        for (x, cell) in row.iter().enumerate() {
-            if cell.is_live() {
-                root.put_char(x as i32, y as i32, 'O', BackgroundFlag::Set);
-            }
+    for (x, y, cell) in w.grid().iter_cells() {
+        if cell.is_live() {
+            root.put_char(x as i32, y as i32, 'O', BackgroundFlag::Set);
         }
     }
 
     //Print label
-    root.print_ex(0, 0, BackgroundFlag::Set, TextAlignment::Left, &label);
+    root.print_ex(0, 0, BackgroundFlag::Set, TextAlignment::Left, label);
     
     //Print generation
     root.print_ex(w.width() as i32 - 1, w.height() as i32 - 1, 
