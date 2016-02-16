@@ -6,6 +6,7 @@ use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment, FontLayout, F
 use tcod::system;
 use tcod::input::{ Event, KeyCode };
 use tcod::input;
+use tcod::chars;
 
 use gol::world::World;
 use gol::grid::{ Grid, Cell };
@@ -148,7 +149,7 @@ fn render(w: &World, label: &str, root: &mut Root) {
 
     for (x, y, cell) in w.grid().iter_cells() {
         if cell.is_live() {
-            root.put_char(x as i32, y as i32, 'O', BackgroundFlag::Set);
+            root.put_char(x as i32, y as i32, chars::RADIO_SET, BackgroundFlag::Set);
         }
     }
 
