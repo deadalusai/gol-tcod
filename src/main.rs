@@ -2,7 +2,7 @@ extern crate tcod;
 extern crate rand;
 extern crate gol;
 
-use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment };
+use tcod::console::{ Root, Console, BackgroundFlag, TextAlignment, FontLayout, FontType };
 use tcod::system;
 use tcod::input::{ Event, KeyCode };
 use tcod::input;
@@ -40,6 +40,10 @@ fn main() {
         Root::initializer()
             .size(width as i32, height as i32)
             .title("Game of Life")
+            // Font
+            .font("consolas12x12_gs_tc.png", FontLayout::Tcod)
+            .font_type(FontType::Greyscale)
+            .font_dimensions(32, 8)
             .init();
                     
     system::set_fps(30);
@@ -73,21 +77,23 @@ fn main() {
 fn maybe_load_plaintext_from_file() -> Option<pt::PlainText> {
     
     //try and grab a filename from the first argument...
-    if let Some(filename) = env::args().skip(1).next() {
-    
-        let path = Path::new(&filename);
-        println!("Reading world from file: {}", path.display());
+    match env::args().skip(1).next() {
+        None => None,
+        Some(filename) => {
         
-        match read_world_from_file(&path) {
-            Err(e) => {
-                //couldn't parse the file - bail out
-                println!("Error parsing file: {}", &e);
-                exit(1);
-            },
-            Ok(p) => Some(p)
+            let path = Path::new(&filename);
+            println!("Reading world from file: {}", path.display());
+            
+            match read_world_from_file(&path) {
+                Err(e) => {
+                    //couldn't parse the file - bail out
+                    println!("Error parsing file: {}", &e);
+                    exit(1);
+                },
+                Ok(p) => Some(p)
+            }
         }
     }
-    else { None }
 }
 
 fn read_world_from_file(path: &Path) -> pt::ParseResult {
@@ -113,7 +119,11 @@ fn create_glider() -> Grid {
     ])
 }
 
-enum Input { Exit, Reroll, Draw(usize, usize) }
+enum Input { 
+    Exit, 
+    Reroll, 
+    Draw(usize, usize)
+}
 
 fn user_input() -> Option<Input> {
     
@@ -122,8 +132,8 @@ fn user_input() -> Option<Input> {
         Some(Event::Key(s)) => {
             match s.code {
                 KeyCode::Escape => Some(Input::Exit),
-                KeyCode::Enter => Some(Input::Reroll),
-                _ => None
+                KeyCode::Enter  => Some(Input::Reroll),
+                              _ => None
             }
         },
         Some(Event::Mouse(s)) if s.lbutton_pressed => {
