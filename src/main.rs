@@ -22,13 +22,13 @@ use std::env;
 
 fn main() {
 
-    let (mut world, label) = 
+    let (mut world, label) =
         if let Some(ptext) = maybe_load_plaintext_from_file() {
             let world = World::new(ptext.data);
             (world, format!("{}\n{}", ptext.name, ptext.comment))
         }
         else {
-            let world = create_random_world(80, 60); 
+            let world = create_random_world(80, 60);
             (world, "Random".into())
         };
 
@@ -46,11 +46,11 @@ fn main() {
             .font_type(FontType::Greyscale)
             .font_dimensions(32, 8)
             .init();
-                    
+
     system::set_fps(30);
 
     while !root.window_closed() {
-    
+
         //Render world
         render(&world, &label, &mut root);
 
@@ -76,15 +76,15 @@ fn main() {
 }
 
 fn maybe_load_plaintext_from_file() -> Option<pt::PlainText> {
-    
+
     //try and grab a filename from the first argument...
     match env::args().skip(1).next() {
         None => None,
         Some(filename) => {
-        
+
             let path = Path::new(&filename);
             println!("Reading world from file: {}", path.display());
-            
+
             match read_world_from_file(&path) {
                 Err(e) => {
                     //couldn't parse the file - bail out
@@ -113,21 +113,21 @@ fn create_random_world(width: usize, height: usize) -> World {
 fn create_glider() -> Grid {
     use gol::grid::Cell::Dead as X;
     use gol::grid::Cell::Live as O;
-    Grid::from_raw(3, 3, vec![ 
-        X, X, O, 
+    Grid::from_raw(3, 3, vec![
+        X, X, O,
         O, X, O,
-        X, O, O 
+        X, O, O
     ])
 }
 
-enum Input { 
-    Exit, 
-    Reroll, 
+enum Input {
+    Exit,
+    Reroll,
     Draw(usize, usize)
 }
 
 fn user_input() -> Option<Input> {
-    
+
     let flags = input::MOUSE | input::KEY;
     match input::check_for_event(flags).map(|(_, e)| e) {
         Some(Event::Key(s)) => {
@@ -154,12 +154,13 @@ fn render(w: &World, label: &str, root: &mut Root) {
     }
 
     //Print label
-    root.print_ex(0, 0, BackgroundFlag::Set, TextAlignment::Left, label);
-    
+    let (x, y) = (0, 0);
+    root.print_ex(x, y, BackgroundFlag::Set, TextAlignment::Left, label);
+
     //Print generation
-    root.print_ex(w.width() as i32 - 1, w.height() as i32 - 1, 
-                  BackgroundFlag::Set, TextAlignment::Right, &format!("Gen: {}", w.generation()));
-    
+    let (x, y) = (w.width() as i32 - 1, w.height() as i32 - 1);
+    root.print_ex(x, y, BackgroundFlag::Set, TextAlignment::Right, &format!("Gen: {}", w.generation()));
+
     root.flush();
 }
 

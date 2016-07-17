@@ -10,7 +10,7 @@ doc = false
 
 [dependencies]
 rand = "*"
-tcod = "0.8.1"
+tcod = "0.10.0"
 
 [dependencies.gol]
 git = "https://github.com/deadalusai/gol-rs.git"
